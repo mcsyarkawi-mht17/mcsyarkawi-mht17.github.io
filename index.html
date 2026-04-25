@@ -1,1 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module 2A</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; padding: 16px; background: #f5f7fa; }
+    h2 { font-size: 1.2rem; color: #1a73e8; margin-bottom: 12px; }
 
+    .toolbar { margin-bottom: 12px; display:flex; gap:8px; align-items:center; }
+    .toggle-btn {
+      background:#1a73e8; color:#fff; border:none; padding:8px 12px; border-radius:6px;
+      cursor:pointer; font-weight:600;
+    }
+    .toggle-btn:focus { outline:3px solid rgba(26,115,232,0.25); }
+
+    .container {
+      display: flex; gap: 16px; align-items: stretch;
+      height: calc(100vh - 120px);
+      transition: all 260ms ease;
+    }
+    .form-panel, .calc-panel {
+      border: 1px solid #ccc; border-radius: 8px;
+      overflow: hidden; background: #fff;
+      min-width: 300px;
+      display:flex; flex-direction:column;
+    }
+    /* Default split: 60% quiz, 40% image */
+    .form-panel { flex: 1 1 60%; transition: flex-basis 260ms ease; }
+    .form-panel iframe { width: 100%; height: 100%; border: none; }
+
+    .calc-panel { flex: 0 0 40%; transition: flex-basis 260ms ease, padding 260ms ease; padding:8px; align-items:center; justify-content:center; }
+
+    /* Carousel styles */
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #f8fafc;
+    }
+    .carousel-track {
+      display: flex;
+      height: 100%;
+      transition: transform 360ms cubic-bezier(.22,.9,.3,1);
+      will-change: transform;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+      display: block;
+      background: #fff;
+    }
+
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .carousel-button:focus { outline: 3px solid rgba(255,255,255,0.25); }
+    .carousel-button.prev { left: 10px; }
+    .carousel-button.next { right: 10px; }
+
+    .carousel-indicators {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .carousel-indicators button {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.6);
+      cursor: pointer;
+      padding: 0;
+    }
+    .carousel-indicators button[aria-current="true"] {
+      background: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.12);
+    }
+
+    /* Collapsed state: image panel shrinks to zero and quiz expands */
+    .container.collapsed .calc-panel {
+      flex-basis: 0;
+      padding: 0;
+      min-width: 0;
+    }
+    .container.collapsed .calc-panel .carousel { opacity: 0; pointer-events: none; }
+    .container.collapsed .form-panel {
+      flex-basis: 100%;
+      min-width: 0;
+    }
+
+    @media (max-width: 900px) {
+      .container { flex-direction: column; height: auto; }
+      .form-panel { height: 600px; min-width: auto; }
+      .calc-panel { height: 480px; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <h2>MHT17 SAT Preparatory & Prediction System</h2>
+
+  <div class="toolbar">
+    <button id="toggleImage" class="toggle-btn" aria-pressed="false" aria-controls="imagePanel">
+      Hide reference image
+    </button>
+    <span style="color:#666;font-size:0.95rem;">Toggle the reference image to give the quiz full width.</span>
+  </div>
+
+  <div id="mainContainer" class="container">
+    <div class="form-panel" id="quizPanel">
+      <iframe
+        src="https://docs.google.com/forms/d/17EQoJzrtr0CyH-pQOAD-jEd9eb7yYsTGdloUcVx-K7w/viewform?embedded=true"
+        marginheight="0" marginwidth="0" title="Quiz form">Loading…</iframe>
+    </div>
+
+    <div class="calc-panel" id="imagePanel">
+      <!-- Carousel: replace the single <img> -->
+      <div class="carousel" id="carousel" aria-roledescription="carousel">
+        <div class="carousel-track" id="carouselTrack">
+          <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="Slide 1 of 5">
+            <img src="https://i.imgur.com/CkMG0p8.jpeg" alt="Reference image 1" loading="lazy">
+          </div>
+          <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="Slide 2 of 5">
+            <img src="https://i.imgur.com/QjZSqnx.jpeg" alt="Reference image 2" loading="lazy">
+          </div>
+          <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="Slide 3 of 5">
+            <img src="https://i.imgur.com/hmBfx5t.jpeg" alt="Reference image 3" loading="lazy">
+          </div>
+          <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="Slide 4 of 5">
+            <img src="https://i.imgur.com/skT3hji.jpeg" alt="Reference image 4" loading="lazy">
+          </div>
+          <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="Slide 5 of 5">
+            <img src="https://i.imgur.com/n1CmEuD.jpeg" alt="Reference image 5" loading="lazy">
+          </div>
+        </div>
+
+        <button class="carousel-button prev" id="prevBtn" aria-label="Previous slide">&larr;</button>
+        <button class="carousel-button next" id="nextBtn" aria-label="Next slide">&rarr;</button>
+
+        <div class="carousel-indicators" id="indicators" role="tablist" aria-label="Slide indicators">
+          <button data-index="0" aria-label="Go to slide 1" aria-current="true"></button>
+          <button data-index="1" aria-label="Go to slide 2"></button>
+          <button data-index="2" aria-label="Go to slide 3"></button>
+          <button data-index="3" aria-label="Go to slide 4"></button>
+          <button data-index="4" aria-label="Go to slide 5"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const btn = document.getElementById('toggleImage');
+      const container = document.getElementById('mainContainer');
+      const STORAGE_KEY = 'quiz2ImageCollapsed';
+
+      // Restore saved preference
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'true') {
+        container.classList.add('collapsed');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.textContent = 'Show reference image';
+      }
+
+      btn.addEventListener('click', () => {
+        const isCollapsed = container.classList.toggle('collapsed');
+        btn.setAttribute('aria-pressed', String(isCollapsed));
+        btn.textContent = isCollapsed ? 'Show reference image' : 'Hide reference image';
+        try { localStorage.setItem(STORAGE_KEY, String(isCollapsed)); } catch (e) { /* ignore */ }
+      });
+
+      // Optional: collapse by default on small screens if no saved preference
+      function handleResize() {
+        if (window.innerWidth <= 900 && !localStorage.getItem(STORAGE_KEY)) {
+          container.classList.add('collapsed');
+          btn.setAttribute('aria-pressed', 'true');
+          btn.textContent = 'Show reference image';
+        }
+      }
+      window.addEventListener('resize', handleResize);
+      handleResize();
+    })();
+
+    // Carousel logic
+    (function () {
+      const track = document.getElementById('carouselTrack');
+      const slides = Array.from(track.children);
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const indicators = document.getElementById('indicators');
+      const indicatorButtons = Array.from(indicators.children);
+      const total = slides.length;
+      let index = 0;
+      let autoplay = true;
+      let interval = 4000;
+      let timer = null;
+
+      function update() {
+        const offset = -index * 100;
+        track.style.transform = `translateX(${offset}%)`;
+        indicatorButtons.forEach((b, i) => {
+          b.setAttribute('aria-current', i === index ? 'true' : 'false');
+        });
+      }
+
+      function goTo(i) {
+        index = (i + total) % total;
+        update();
+      }
+
+      function next() { goTo(index + 1); }
+      function prev() { goTo(index - 1); }
+
+      nextBtn.addEventListener('click', () => { next(); resetTimer(); });
+      prevBtn.addEventListener('click', () => { prev(); resetTimer(); });
+
+      indicatorButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = Number(btn.dataset.index);
+          goTo(i);
+          resetTimer();
+        });
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') { prev(); resetTimer(); }
+        if (e.key === 'ArrowRight') { next(); resetTimer(); }
+      });
+
+      // Touch swipe (basic)
+      (function addTouch(el) {
+        let startX = 0;
+        let deltaX = 0;
+        el.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+        }, {passive:true});
+        el.addEventListener('touchmove', (e) => {
+          deltaX = e.touches[0].clientX - startX;
+        }, {passive:true});
+        el.addEventListener('touchend', () => {
+          if (Math.abs(deltaX) > 40) {
+            if (deltaX < 0) next(); else prev();
+            resetTimer();
+          }
+          startX = 0; deltaX = 0;
+        });
+      })(document.getElementById('carousel'));
+
+      // Autoplay
+      function startTimer() {
+        if (!autoplay) return;
+        timer = setInterval(next, interval);
+      }
+      function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+      function resetTimer() {
+        stopTimer();
+        startTimer();
+      }
+
+      // Pause autoplay when user hovers or focuses carousel controls
+      const carouselEl = document.getElementById('carousel');
+      carouselEl.addEventListener('mouseenter', () => { stopTimer(); });
+      carouselEl.addEventListener('mouseleave', () => { startTimer(); });
+      carouselEl.addEventListener('focusin', () => { stopTimer(); });
+      carouselEl.addEventListener('focusout', () => { startTimer(); });
+
+      // Resize handling: keep slides full width (CSS uses 100% so no JS needed)
+      window.addEventListener('load', () => {
+        update();
+        startTimer();
+      });
+
+      // Expose simple API if needed later
+      window.simpleCarousel = { next, prev, goTo, startTimer, stopTimer };
+    })();
+  </script>
+</body>
+</html>
