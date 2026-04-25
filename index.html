@@ -5,22 +5,45 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cover — Click to Register</title>
   <style>
-    html,body { height:100%; margin:0; }
+    html, body { height:100%; margin:0; font-family:system-ui,Segoe UI,Roboto,Arial; background:#000; }
     .cover {
+      position:relative;
       display:flex;
       align-items:center;
       justify-content:center;
-      height:100%;
+      height:100vh;
+      overflow:hidden;
       background:#000;
     }
-    .cover img {
+
+    /* Image container */
+    .carousel-link {
+      display:block;
       max-width:100%;
       max-height:100%;
       width:auto;
       height:auto;
       cursor:pointer;
-      display:block;
+      outline:none;
+      border:0;
+      position:relative;
     }
+
+    /* single image element used for fade transitions */
+    #carouselImage {
+      display:block;
+      max-width:100%;
+      max-height:100%;
+      width:auto;
+      height:auto;
+      transition:opacity 450ms ease;
+      opacity:1;
+      -webkit-user-drag: none;
+      user-select:none;
+      pointer-events:auto;
+    }
+
+    /* CTA button */
     .cta {
       position: absolute;
       bottom: 40px;
@@ -32,18 +55,134 @@
       border-radius:6px;
       font-weight:600;
       text-decoration:none;
+      z-index:10;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+    }
+
+    /* small controls (optional) */
+    .controls {
+      position:absolute;
+      top:50%;
+      left:0;
+      right:0;
+      display:flex;
+      justify-content:space-between;
+      transform:translateY(-50%);
+      pointer-events:none;
+      z-index:9;
+    }
+    .control-btn {
+      pointer-events:auto;
+      background:rgba(0,0,0,0.45);
+      color:#fff;
+      border:0;
+      padding:10px 14px;
+      margin:0 8px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:16px;
+      backdrop-filter: blur(4px);
+    }
+
+    @media (max-width:640px) {
+      .cta { bottom:20px; padding:10px 14px; font-size:14px; }
+      .control-btn { padding:8px 10px; font-size:14px; }
     }
   </style>
 </head>
 <body>
-  <div class="cover">
+  <div class="cover" aria-live="polite">
     <!-- Clicking image or button goes to registration.html -->
-    <a href="registration.html" title="Open registration portal" aria-label="Open registration portal">
-      <img src="https://i.imgur.com/btqDqGh.jpeg" alt="SAT preparation poster — click to register" />
+    <a id="carouselLink" class="carousel-link" href="registration.html" title="Open registration portal" aria-label="Open registration portal">
+      <img id="carouselImage" src="https://i.imgur.com/btqDqGh.jpeg" alt="SAT preparation poster — click to register" />
     </a>
 
     <!-- Optional visible button (same link) -->
     <a class="cta" href="registration.html" role="button">Register Now</a>
+
+    <!-- Optional previous/next controls -->
+    <div class="controls" aria-hidden="false">
+      <button id="prevBtn" class="control-btn" aria-label="Previous image">◀</button>
+      <button id="nextBtn" class="control-btn" aria-label="Next image">▶</button>
+    </div>
   </div>
+
+  <script>
+    (function () {
+      // List of 5 images to rotate (replace with your own URLs if desired)
+      const images = [
+        { src: "https://i.imgur.com/HRtXc5p.jpeg", alt: "SAT preparation poster 1 — click to register" },
+        { src: "https://i.imgur.com/FZEXPaS.jpeg", alt: "SAT preparation poster 2 — click to register" },
+        { src: "https://i.imgur.com/XHklnmy.jpeg", alt: "SAT preparation poster 3 — click to register" },
+        { src: "https://i.imgur.com/jUypGS0.jpeg", alt: "SAT preparation poster 4 — click to register" },
+        { src: "https://i.imgur.com/XAkqA2R.jpeg", alt: "SAT preparation poster 5 — click to register" }
+      ];
+
+      const intervalMs = 3500; // rotation interval
+      const fadeDuration = 450; // must match CSS transition time
+      let idx = 0;
+      let timer = null;
+      const imgEl = document.getElementById("carouselImage");
+      const linkEl = document.getElementById("carouselLink");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      let isPaused = false;
+
+      // Preload images
+      images.forEach(i => { const p = new Image(); p.src = i.src; });
+
+      function showIndex(newIndex) {
+        if (newIndex === idx) return;
+        idx = (newIndex + images.length) % images.length;
+
+        // fade out, change src, fade in
+        imgEl.style.opacity = 0;
+        // after fade out completes, swap image
+        setTimeout(() => {
+          imgEl.src = images[idx].src;
+          imgEl.alt = images[idx].alt;
+          imgEl.style.opacity = 1;
+        }, fadeDuration);
+      }
+
+      function next() { showIndex(idx + 1); }
+      function prev() { showIndex(idx - 1); }
+
+      function startTimer() {
+        stopTimer();
+        timer = setInterval(() => {
+          if (!isPaused) next();
+        }, intervalMs);
+      }
+      function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+
+      // Controls
+      nextBtn.addEventListener("click", (e) => { e.preventDefault(); next(); startTimer(); });
+      prevBtn.addEventListener("click", (e) => { e.preventDefault(); prev(); startTimer(); });
+
+      // Pause on hover/focus to improve accessibility
+      linkEl.addEventListener("mouseenter", () => { isPaused = true; });
+      linkEl.addEventListener("mouseleave", () => { isPaused = false; });
+      linkEl.addEventListener("focusin", () => { isPaused = true; });
+      linkEl.addEventListener("focusout", () => { isPaused = false; });
+
+      // Keyboard navigation (left/right) while focus is inside the document
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") { next(); startTimer(); }
+        if (e.key === "ArrowLeft") { prev(); startTimer(); }
+      });
+
+      // Initialize
+      imgEl.src = images[0].src;
+      imgEl.alt = images[0].alt;
+      startTimer();
+
+      // Ensure clicking anywhere on the image goes to registration.html (anchor already wraps the image)
+      // If you want the whole cover area clickable, uncomment the following:
+      // document.querySelector('.cover').addEventListener('click', () => { window.location.href = 'registration.html'; });
+
+    })();
+  </script>
 </body>
-</html>
