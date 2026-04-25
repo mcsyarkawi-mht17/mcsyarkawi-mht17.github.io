@@ -111,11 +111,11 @@
     (function () {
       // List of 5 images to rotate (replace with your own URLs if desired)
       const images = [
-        { src: "https://i.imgur.com/btqDqGh.jpeg", alt: "SAT preparation poster — click to register" },
-        { src: "https://i.imgur.com/3GvwNBf.jpeg", alt: "Exam tips poster — click to register" },
-        { src: "https://i.imgur.com/2nCt3Sbl.jpg", alt: "Study group poster — click to register" },
-        { src: "https://i.imgur.com/8Km9tLL.jpg", alt: "Practice test poster — click to register" },
-        { src: "https://i.imgur.com/5qH6b7K.jpg", alt: "Success story poster — click to register" }
+        { src: "https://i.imgur.com/HRtXc5p.jpeg", alt: "SAT preparation poster 1 — click to register" },
+        { src: "https://i.imgur.com/FZEXPaS.jpeg", alt: "SAT preparation poster 2 — click to register" },
+        { src: "https://i.imgur.com/XHklnmy.jpeg", alt: "SAT preparation poster 3 — click to register" },
+        { src: "https://i.imgur.com/jUypGS0.jpeg", alt: "SAT preparation poster 4 — click to register" },
+        { src: "https://i.imgur.com/XAkqA2R.jpeg", alt: "SAT preparation poster 5 — click to register" }
       ];
 
       const intervalMs = 3500; // rotation interval
